@@ -32,7 +32,7 @@ function renderList(){
  const q=$('search').value.trim().toLowerCase();
  let data=records.filter(x=>(activeFilter!=='fav'||x.favorite)&&
    (activeCategory==='all'||(Array.isArray(x.categories)&&x.categories.includes(activeCategory)))&&
-   (!q||[x.title,x.prompt,x.negative,(x.categories||[]).map(categoryLabel).join(' ')].join(' ').toLowerCase().includes(q)));
+   (!q||[x.title,x.prompt,x.negative,x.application,x.model,x.memo,(x.categories||[]).map(categoryLabel).join(' ')].join(' ').toLowerCase().includes(q)));
  data.sort((a,b)=>(newestFirst?b.updatedAt-a.updatedAt:a.updatedAt-b.updatedAt));
  $('count').textContent=`${data.length}件`;
  $('cards').innerHTML=data.length?'':`<div class="empty"><div style="font-size:34px">✦</div><b>${q||activeCategory!=='all'?'見つかりませんでした':'まだ登録がありません'}</b>${q||activeCategory!=='all'?'検索・カテゴリー条件を変えてみてください':'＋ボタンから最初のプロンプトを登録しましょう。'}</div>`;
@@ -51,6 +51,11 @@ function openDetail(id){
  ${x.categories?.length?`<div class="detailcategories">${categoryBadges(x.categories)}</div>`:''}
  <section class="block"><div class="blockhead"><strong>メインプロンプト</strong><button class="copy" data-copy="prompt">コピー</button></div><div class="prompttext">${escapeHTML(x.prompt||'（未入力）')}</div></section>
  <section class="block"><div class="blockhead"><strong>ネガティブプロンプト</strong><button class="copy" data-copy="negative">コピー</button></div><div class="prompttext">${escapeHTML(x.negative||'（未入力）')}</div></section>
+ ${(x.application||x.model||x.memo)?`<section class="block"><div class="blockhead"><strong>生成環境・メモ</strong></div>
+  ${x.application?`<div class="prompttext"><strong>生成アプリケーション：</strong>${escapeHTML(x.application)}</div>`:''}
+  ${x.model?`<div class="prompttext"><strong>使用モデル：</strong>${escapeHTML(x.model)}</div>`:''}
+  ${x.memo?`<div class="prompttext"><strong>メモ：</strong><br>${escapeHTML(x.memo).replace(/\n/g,'<br>')}</div>`:''}
+ </section>`:''}
  <section class="block"><div class="blockhead"><strong>追加画像</strong><span class="muted">${x.extras?.length||0}枚</span></div><div class="attachments">${(x.extras||[]).map((b,i)=>`<img class="zoomable" data-gallery-index="${x.cover?i+1:i}" src="${imgURL(b)}" alt="参考画像 ${i+1}を拡大">`).join('')||'<span class="muted">追加画像はありません</span>'}</div></section>
  <div class="actions"><button class="secondary" id="favDetail">${x.favorite?'♥ お気に入り解除':'♡ お気に入り'}</button><button class="primary" id="editDetail">編集</button><button class="danger" id="deleteDetail">削除</button></div>`;
  el.querySelectorAll('.zoomable').forEach(img=>img.addEventListener('click',()=>openGallery(x,Number(img.dataset.galleryIndex))));
@@ -69,7 +74,7 @@ function preview(file,container,removeFn){const url=URL.createObjectURL(file);co
 function openForm(id=null){
  resetForm();editingId=id;
  $('formHeading').textContent=id?'EDIT PROMPT':'NEW PROMPT';
- if(id){const x=records.find(r=>r.id===id);$('title').value=x.title;$('prompt').value=x.prompt||'';$('negative').value=x.negative||'';existingCover=x.cover;existingExtras=[...(x.extras||[])];renderCategoryChoices(x.categories||[]);if(existingCover)preview(existingCover,$('coverPreview'),()=>existingCover=null);existingExtras.forEach((b,i)=>preview(b,$('extraPreview'),()=>existingExtras[i]=null));}
+ if(id){const x=records.find(r=>r.id===id);$('title').value=x.title;$('prompt').value=x.prompt||'';$('negative').value=x.negative||'';$('application').value=x.application||'';$('model').value=x.model||'';$('memo').value=x.memo||'';existingCover=x.cover;existingExtras=[...(x.extras||[])];renderCategoryChoices(x.categories||[]);if(existingCover)preview(existingCover,$('coverPreview'),()=>existingCover=null);existingExtras.forEach((b,i)=>preview(b,$('extraPreview'),()=>existingExtras[i]=null));}
  show('formView');
 }
 $('cover').addEventListener('change',e=>{coverFile=e.target.files[0]||null;$('coverPreview').innerHTML='';if(coverFile)preview(coverFile,$('coverPreview'),()=>{coverFile=null;$('cover').value='';});});
@@ -78,7 +83,7 @@ $('promptForm').addEventListener('submit',async e=>{
  e.preventDefault();const title=$('title').value.trim();if(!title){alert('タイトルを入力してください');return;}
  const old=editingId?records.find(r=>r.id===editingId):null;const cover=coverFile||existingCover;if(!cover){alert('サムネイル画像を選択してください');return;}
  const extras=[...existingExtras.filter(Boolean),...extraFiles.filter(Boolean)];
- const item={id:old?.id||crypto.randomUUID(),title,cover,prompt:$('prompt').value,negative:$('negative').value,categories:selectedCategories(),extras,favorite:old?.favorite||false,createdAt:old?.createdAt||Date.now(),updatedAt:Date.now()};
+ const item={id:old?.id||crypto.randomUUID(),title,cover,prompt:$('prompt').value,negative:$('negative').value,application:$('application').value.trim(),model:$('model').value.trim(),memo:$('memo').value.trim(),categories:selectedCategories(),extras,favorite:old?.favorite||false,createdAt:old?.createdAt||Date.now(),updatedAt:Date.now()};
  try{await save(item);await refresh();show('listView');}catch(err){alert('保存できませんでした。端末の空き容量を確認してください。');}
 });
 async function refresh(){records=await all();renderCategoryFilters();renderList();}
