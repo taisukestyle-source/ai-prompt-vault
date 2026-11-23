@@ -92,6 +92,19 @@
       <div class="field"><label>サムネイル画像 *</label><div class="filebox"><input id="cover" type="file" accept="image/*"><div class="hint">一覧に表示するメイン画像を1枚選択してください。</div><div class="previewrow" id="coverPreview"></div></div></div>
       <div class="field"><label for="prompt">メインプロンプト</label><textarea id="prompt" placeholder="画像生成に使用したプロンプトを入力"></textarea></div>
       <div class="field"><label for="negative">ネガティブプロンプト</label><textarea id="negative" placeholder="除外したい要素を入力"></textarea></div>
+
+      <div class="field">
+        <label for="application">生成アプリケーション</label>
+        <input id="application" placeholder="例：ComfyUI、Draw Things、Midjourney">
+      </div>
+      <div class="field">
+        <label for="model">使用モデル</label>
+        <input id="model" placeholder="例：Wan2.2、FLUX、RealVisXL">
+      </div>
+      <div class="field">
+        <label for="memo">メモ</label>
+        <textarea id="memo" placeholder="設定や修正内容などを自由に記入"></textarea>
+      </div>
       <div class="field"><label for="extras">追加画像（複数選択可）</label><div class="filebox"><input id="extras" type="file" accept="image/*" multiple><div class="hint">参考画像・衣装資料などを複数選択できます。追加画像の枚数は固定していません。</div><div class="previewrow" id="extraPreview"></div></div></div>
       <div class="formbuttons"><button type="button" class="secondary" id="cancelForm">キャンセル</button><button type="submit" class="primary">保存する</button></div>
     </form>
